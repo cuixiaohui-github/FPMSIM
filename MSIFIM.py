@@ -1,7 +1,7 @@
 import OEFUFP
 import numpy
 import time
-# 动态构建BSW列表，BSW的个数是事先固定好的
+# 动态构建列表
 BSW = globals()
 for m in range(1, 4):
     BSW[str(m)] = []
@@ -18,16 +18,14 @@ with open(r'C:\Users\Administrator\Desktop\data\T10I4D100K.txt') as database:
         else:
             break
     print('数据的大小为：', num)
-n = 15000  # 滑动窗口的大小
-m1 = 300   # 滑动窗口1的大小
-m2 = 4800  # 滑动窗口2的大小
-m3 = 9900   # 滑动窗口3的大小
+n = 15000  
+m1 = 300   
+m2 = 4800  
+m3 = 9900   
 if __name__ == '__main__':
     print('开始执行')
     time_start = time.perf_counter()
     min_sup = 0.01
-    # 每个BSW分别调用FIU找到频繁项集
-    FI = globals()
     for m in range(1, 4):
         if m == 1:
             frequent_itemsets = OEFUFP.find_frequent_items(BSW[str(m)], 300, include_support=True)
@@ -35,31 +33,18 @@ if __name__ == '__main__':
             frequent_itemsets = OEFUFP.find_frequent_items(BSW[str(m)], 4800, include_support=True)
         else:
             frequent_itemsets = OEFUFP.find_frequent_items(BSW[str(m)], 9900, include_support=True)
-        # print('调用完成')
         FI[str(m)] = {}
         for itemset, support in frequent_itemsets:  # 将generator结果存入list
             if len(itemset) != 1:
                 FI[str(m)][tuple(itemset)] = support
-        # print('存放完成')
-        # if m == 1:
-        #     print('执行了1')
-        # if m == 2:
-        #     print('执行了2',)
-        # if m == 3:
-        #      print('执行了3')
-        # result = sorted(FI[str(m)], key=lambda support: support[1])
-    # 计算BSW之间的相似度,构建矩阵(矩阵元素都为1)并将相似度添加进去
+       
+    # 计算相似度,构建矩阵(矩阵元素都为1)并将相似度添加进去
     M = numpy.ones(shape=(4, 4))
     try:
         s12 = abs(len(FI['1'].keys() & FI['2'].keys())) / abs(len(FI['1'].keys() | FI['2'].keys()))
         s13 = abs(len(FI['1'].keys() & FI['3'].keys())) / abs(len(FI['1'].keys() | FI['3'].keys()))
         s23 = abs(len(FI['2'].keys() & FI['3'].keys())) / abs(len(FI['2'].keys() | FI['3'].keys()))
-        # s12 = (len(FI['1'].keys() & FI['2'].keys()) / len(FI['2'].keys())) \
-        #       + (len(FI['1'].keys() & FI['2'].keys()) / len(FI['1'].keys())) - 1
-        # s13 = (len(FI['1'].keys() & FI['3'].keys()) / len(FI['3'].keys())) \
-        #       + (len(FI['1'].keys() & FI['3'].keys()) / len(FI['1'].keys())) - 1
-        # s23 = (len(FI['2'].keys() & FI['3'].keys()) / len(FI['2'].keys())) \
-        #       + (len(FI['2'].keys() & FI['3'].keys()) / len(FI['3'].keys())) - 1
+
         M[0, 1] = s12
         M[1, 0] = s12
         M[0, 2] = s13
@@ -128,7 +113,7 @@ if __name__ == '__main__':
     time_end = time.perf_counter()
     print('原始数据库挖掘的个数为：', len(all_FI))
     print('原始数据库的挖掘时间为：', time_end - time_start, 's')
-    # print(all_FI)
+ 
 # 处理新增数据库
 time_end1 =time.perf_counter()
 final_FI = {}
@@ -152,12 +137,7 @@ try:
     s14 = abs(len(FI['1'].keys() & FI['4'].keys())) / abs(len(FI['1'].keys() | FI['4'].keys()))
     s24 = abs(len(FI['2'].keys() & FI['4'].keys())) / abs(len(FI['2'].keys() | FI['4'].keys()))
     s34 = abs(len(FI['3'].keys() & FI['4'].keys())) / abs(len(FI['3'].keys() | FI['4'].keys()))
-    # s14 = (len(FI['1'].keys() & FI['4'].keys()) / len(FI['4'].keys())) \
-    #       + (len(FI['1'].keys() & FI['4'].keys()) / len(FI['1'].keys())) - 1
-    # s24 = (len(FI['2'].keys() & FI['4'].keys()) / len(FI['4'].keys())) \
-    #       + (len(FI['2'].keys() & FI['4'].keys()) / len(FI['2'].keys())) - 1
-    # s34 = (len(FI['3'].keys() & FI['4'].keys()) / len(FI['4'].keys())) \
-    #       + (len(FI['3'].keys() & FI['4'].keys()) / len(FI['3'].keys())) - 1
+  
     M[0, 3] = s14
     M[3, 0] = s14
     M[1, 3] = s24
@@ -190,8 +170,6 @@ for key1 in FI['4']:
         con_info[key1] = [count, count1, count2, FI['4'][key1]]
     else:
         con_info[key1][3] = FI['4'][key1]
-    # 打印候选项集
-    # print(key1, ':', con_info[key1][0] + con_info[key1][1] + con_info[key1][2] + con_info[key1][3])
     if con_info[key1][0] + con_info[key1][1] + con_info[key1][2] + con_info[key1][3] >= min_sup * (n + n1):
         final_FI[key1] = con_info[key1][0] + con_info[key1][1] + con_info[key1][2] + con_info[key1][3]
 # 原来频繁现不频繁
